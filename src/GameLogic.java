@@ -1,6 +1,6 @@
 
 public class GameLogic implements PlayableLogic {
-    public static final int Sort_By_Steps = 1;
+    public static final int Sort_By_Steps = 1; // for the second part of the ass
     private static final int BOARD_SIZE = 11;
     private static final String KING_SYMBOL = "♔";
     private ConcretePlayer PlayerOne = new ConcretePlayer(1);
@@ -13,8 +13,8 @@ public class GameLogic implements PlayableLogic {
     private ConcretePiece[][] pawns = new ConcretePiece[11][11];
     public GameLogic() {
         Initgame();
-        //PlayerOne = new ConcretePlayer(1);
-        // PlayerTwo = new ConcretePlayer(2);
+        PlayerOne = new ConcretePlayer(1);
+        PlayerTwo = new ConcretePlayer(2);
         King_position = new Position(5, 5);
         countMove = 0;
     }
