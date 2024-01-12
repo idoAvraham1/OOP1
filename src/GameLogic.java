@@ -1,6 +1,6 @@
 
 public class GameLogic implements PlayableLogic {
-    public static final int Sort_By_Steps = 1; // for the second part of the ass
+    public static final int Sort_By_Steps = 1; // for the second part of the assigment
     private static final int BOARD_SIZE = 11;
     private static final String KING_SYMBOL = "♔";
     private ConcretePlayer PlayerOne = new ConcretePlayer(1);
