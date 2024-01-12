@@ -11,7 +11,6 @@ public class GameLogic implements PlayableLogic {
     private int countMove; //2 first
 
     private ConcretePiece[][] pawns = new ConcretePiece[11][11];
-    //just update checking
     public GameLogic() {
         Initgame();
         //PlayerOne = new ConcretePlayer(1);
