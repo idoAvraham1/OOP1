@@ -5,11 +5,13 @@ public abstract class ConcretePiece implements Piece {
     private LinkedList<String> Steps;
     private String name;
 
+    private int numOfSteps;
 
     public ConcretePiece(ConcretePlayer owner, String name) {
         this.owner = owner;
         Steps = new LinkedList<>();
         this.name = name;
+        numOfSteps=0;
     }
 
     public Player getOwner() {
@@ -24,6 +26,12 @@ public abstract class ConcretePiece implements Piece {
 
     public LinkedList<String> getSteps() {
         return Steps;
+    }
+
+    public int getNumOfSteps(){ return this.numOfSteps;}
+
+    public void updateStepsNum(int i){
+        this.numOfSteps=this.numOfSteps+i;
     }
 
     public String stepsList(){

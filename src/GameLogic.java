@@ -1,25 +1,25 @@
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class GameLogic implements PlayableLogic {
-    ArrayList<ConcretePiece> Player1= new ArrayList<>();
-    ArrayList<ConcretePiece> Player2= new ArrayList<>();
-    public static final int Sort_By_Steps = 1; // for the second part of the assigment
+    ArrayList<ConcretePiece> pawns= new ArrayList<>();
+
     private static final int BOARD_SIZE = 11;
     private static final String KING_SYMBOL = "♔";
+    public   static  boolean  Winner; // 1 or 2
     private ConcretePlayer PlayerOne = new ConcretePlayer(1);
-    ;
     private ConcretePlayer PlayerTwo = new ConcretePlayer(2);
-    ;
     private Position King_position;
     private int countMove; //2 first
 
-    private ConcretePiece[][] pawns = new ConcretePiece[11][11];
+    private ConcretePiece[][] board = new ConcretePiece[11][11];
     public GameLogic() {
         Initgame();
         PlayerOne = new ConcretePlayer(1);
         PlayerTwo = new ConcretePlayer(2);
         King_position = new Position(5, 5);
         countMove = 0;
+        Winner=false;
     }
 
     /**
@@ -45,13 +45,41 @@ public class GameLogic implements PlayableLogic {
             if (!getPieceAtPosition(b).getType().equals(KING_SYMBOL)) {
                 checkForPossibleKills(b);
             }
+            // update the number of steps the pawn made
+            updateSteps(a,b);
+
+            // check for possiblie win of one of the sides after every valid move
+              checkWinningTerms();
 
             // The move was successful
             return true;
-        }
-
+            }
         // The move was not valid
         return false;
+    }
+    private void checkWinningTerms(){
+        //if the king reached a corner, player one wins
+        if (isKingAtCorner()) {
+            PlayerOne.Win();
+            prints(1);
+            Winner=true;
+        }
+        // If the king is surrounded by the pawns of the second player, the second player wins
+        if (isKingSurrouned()) {
+            PlayerTwo.Win();
+             prints(2);
+            Winner=true;
+        }
+    }
+
+    private void updateSteps(Position current, Position destination ){
+        int current_x=current.getRow();
+        int current_y=current.getColum();
+        int destination_x=destination.getRow();
+        int destination_y=destination.getColum();
+        int ans= Math.abs((current_x-destination_x)+(current_y-destination_y));
+
+        board[destination_x][destination_y].updateStepsNum(ans);
     }
 
 
@@ -63,7 +91,7 @@ public class GameLogic implements PlayableLogic {
      */
 
     public Piece getPieceAtPosition(Position position) {
-        return pawns[position.getRow()][position.getColum()];
+        return board[position.getRow()][position.getColum()];
 
     }
 
@@ -91,17 +119,8 @@ public class GameLogic implements PlayableLogic {
      * @return True if the game is finished, otherwise false
      */
     public boolean isGameFinished() {
-        //if the king reached a corner, player one wins
-        if (isKingAtCorner()) {
-            PlayerOne.Win();
-            return true;
-        }
-        // If the king is surrounded by the pawns of the second player, the second player wins
-        if (isKingSurrouned()) {
-            PlayerTwo.Win();
-            return true;
-        }
-        return false;
+
+        return Winner;
     }
 
     /**
@@ -123,9 +142,9 @@ public class GameLogic implements PlayableLogic {
 
         countMove = 0;
         UpdateKingPosition(new Position(5, 5));
-        for (int i = 0; i < pawns.length; i++) {
-            for (int j = 0; j < pawns.length; j++)
-                pawns[i][j] = null;
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board.length; j++)
+                board[i][j] = null;
         }
         Initgame();
     }
@@ -145,7 +164,7 @@ public class GameLogic implements PlayableLogic {
      *
      * @param b The new position for the king
      */
-    public void UpdateKingPosition(Position b) {
+    private void UpdateKingPosition(Position b) {
         this.King_position.setRow(b.getRow());
         this.King_position.setColum(b.getColum());
     }
@@ -153,74 +172,74 @@ public class GameLogic implements PlayableLogic {
     /**
      * Initializes the game board with pieces in their starting positions.
      */
-    public void Initgame() {
-        pawns[5][3] = new Pawn(PlayerOne, "D1");
-        pawns[5][3].addStep(new Position(5,3).toString());
+    private void Initgame() {
+        board[5][3] = new Pawn(PlayerOne, "D1");
+        board[5][3].addStep(new Position(5,3).toString());
 
-        pawns[5][5] = new King(PlayerOne, "K7");
-        pawns[5][5].addStep(new Position(5,5).toString());
+        board[5][5] = new King(PlayerOne, "K7");
+        board[5][5].addStep(new Position(5,5).toString());
 
-        pawns[5][7] = new Pawn(PlayerOne, "D13");
-        pawns[5][7].addStep(new Position(5,7).toString());
+        board[5][7] = new Pawn(PlayerOne, "D13");
+        board[5][7].addStep(new Position(5,7).toString());
 
         for (int i = 4; i < 7; i++) {
-            pawns[i][4] = new Pawn(PlayerOne, "D"+(i-2));
-            pawns[i][4].addStep(new Position(i,4).toString());
+            board[i][4] = new Pawn(PlayerOne, "D"+(i-2));
+            board[i][4].addStep(new Position(i,4).toString());
         }
         for (int i = 3; i < 8; i++) {
             if (i == 5) {
                 continue;
             }
-            pawns[i][5] = new Pawn(PlayerOne, "D"+(i+2));
-            pawns[i][5].addStep(new Position(i,5).toString());
+            board[i][5] = new Pawn(PlayerOne, "D"+(i+2));
+            board[i][5].addStep(new Position(i,5).toString());
         }
 
         for (int i = 4; i < 7; i++) {
-            pawns[i][6] = new Pawn(PlayerOne, "D"+(i+6));
-            pawns[i][6].addStep(new Position(i,6).toString());
+            board[i][6] = new Pawn(PlayerOne, "D"+(i+6));
+            board[i][6].addStep(new Position(i,6).toString());
         }
 
 
-        pawns[5][1] = new Pawn(PlayerTwo, "A6");
-        pawns[5][1].addStep(new Position(5,1).toString());
+        board[5][1] = new Pawn(PlayerTwo, "A6");
+        board[5][1].addStep(new Position(5,1).toString());
         for (int i = 3; i < 8; i++) {
-            pawns[i][0] = new Pawn(PlayerTwo, "A"+(i-2));
-            pawns[i][0].addStep(new Position(i,0).toString());
+            board[i][0] = new Pawn(PlayerTwo, "A"+(i-2));
+            board[i][0].addStep(new Position(i,0).toString());
         }
-        pawns[1][5] = new Pawn(PlayerTwo, "A12");
-        pawns[1][5].addStep(new Position(1,5).toString());
+        board[1][5] = new Pawn(PlayerTwo, "A12");
+        board[1][5].addStep(new Position(1,5).toString());
         int j=7;
         for (int i = 3; i < 8; i++) {
             if (i==6){
-                pawns[0][i] = new Pawn(PlayerTwo, "A15");
-                pawns[0][i].addStep(new Position(0,i).toString());
+                board[0][i] = new Pawn(PlayerTwo, "A15");
+                board[0][i].addStep(new Position(0,i).toString());
                 j=17;
                 continue;
             }
-            pawns[0][i] = new Pawn(PlayerTwo, "A"+(j));
-            pawns[0][i].addStep(new Position(0,i).toString());
+            board[0][i] = new Pawn(PlayerTwo, "A"+(j));
+            board[0][i].addStep(new Position(0,i).toString());
             j=j+2;
         }
         j=20;
-        pawns[5][9] = new Pawn(PlayerTwo, "A19");
-        pawns[5][9].addStep(new Position(5,9).toString());
+        board[5][9] = new Pawn(PlayerTwo, "A19");
+        board[5][9].addStep(new Position(5,9).toString());
         for (int i = 3; i < 8; i++) {
-            pawns[i][10] = new Pawn(PlayerTwo, "A"+j);
-            pawns[i][10].addStep(new Position(i,10).toString());
+            board[i][10] = new Pawn(PlayerTwo, "A"+j);
+            board[i][10].addStep(new Position(i,10).toString());
             j++;
         }
-        pawns[9][5] = new Pawn(PlayerTwo, "A13");
-        pawns[9][5].addStep(new Position(9,5).toString());
+        board[9][5] = new Pawn(PlayerTwo, "A13");
+        board[9][5].addStep(new Position(9,5).toString());
         j=8;
         for (int i = 3; i < 8; i++) {
             if (i==5){
-                pawns[10][i] = new Pawn(PlayerTwo, "A14");
-                pawns[10][i].addStep(new Position(10,i).toString());
+                board[10][i] = new Pawn(PlayerTwo, "A14");
+                board[10][i].addStep(new Position(10,i).toString());
                 j=16;
                 continue;
             }
-            pawns[10][i] = new Pawn(PlayerTwo, "A"+j);
-            pawns[10][i].addStep(new Position(10,i).toString());
+            board[10][i] = new Pawn(PlayerTwo, "A"+j);
+            board[10][i].addStep(new Position(10,i).toString());
             j=j+2;
         }
         // init the arraylist with all the pieces
@@ -228,13 +247,11 @@ public class GameLogic implements PlayableLogic {
 
     }
 
-    private void initArrayLists(){
-        for (int i=0;i<BOARD_SIZE;i++){
-            for (int j=0;j<BOARD_SIZE;j++){
-                if (pawns[i][j] !=null) {
-                    if (pawns[i][j].getOwner().isPlayerOne())
-                        Player1.add(pawns[i][j]);
-                    else {  Player2.add(pawns[i][j]);}
+    private void initArrayLists() {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                if (board[i][j] != null) {
+                    pawns.add(board[i][j]);
                 }
             }
         }
@@ -248,10 +265,10 @@ public class GameLogic implements PlayableLogic {
      * @param b Destination position for the piece
      * @return True if the move is valid, otherwise false
      */
-    public boolean isValidMove(Position a, Position b) {
+    private boolean isValidMove(Position a, Position b) {
         // Check for self-move, diagonal move, or moving from an empty square
-        if (a.isEqual(b) || a.isDiagonal(b) || pawns[a.getRow()][a.getColum()] == null
-                || pawns[b.getRow()][b.getColum()] != null) {
+        if (a.isEqual(b) || a.isDiagonal(b) || board[a.getRow()][a.getColum()] == null
+                || board[b.getRow()][b.getColum()] != null) {
             return false;
         }
 
@@ -276,13 +293,13 @@ public class GameLogic implements PlayableLogic {
      * @param b Destination position for the piece
      * @return True if the path is valid, otherwise false
      */
-    public boolean isValidPath(Position a, Position b) {
+    private boolean isValidPath(Position a, Position b) {
         // Check if the movement is along the same column
         if (a.getColum() == b.getColum()) {
             // Check upward movement
             if (a.getRow() < b.getRow()) {
                 for (int i = a.getRow() + 1; i < b.getRow(); i++) {
-                    if (pawns[i][a.getColum()] != null) {
+                    if (board[i][a.getColum()] != null) {
                         // Path is blocked
                         return false;
                     }
@@ -291,7 +308,7 @@ public class GameLogic implements PlayableLogic {
             // Check downward movement
             else if (a.getRow() > b.getRow()) {
                 for (int i = b.getRow() + 1; i < a.getRow(); i++) {
-                    if (pawns[i][a.getColum()] != null) {
+                    if (board[i][a.getColum()] != null) {
                         // Path is blocked
                         return false;
                     }
@@ -303,7 +320,7 @@ public class GameLogic implements PlayableLogic {
             // Check leftward movement
             if (a.getColum() < b.getColum()) {
                 for (int i = a.getColum() + 1; i < b.getColum(); i++) {
-                    if (pawns[a.getRow()][i] != null) {
+                    if (board[a.getRow()][i] != null) {
                         // Path is blocked
                         return false;
                     }
@@ -312,7 +329,7 @@ public class GameLogic implements PlayableLogic {
             // Check rightward movement
             else if (a.getColum() > b.getColum()) {
                 for (int i = b.getColum() + 1; i < a.getColum(); i++) {
-                    if (pawns[a.getRow()][i] != null) {
+                    if (board[a.getRow()][i] != null) {
                         // Path is blocked
                         return false;
                     }
@@ -331,11 +348,11 @@ public class GameLogic implements PlayableLogic {
      * @param startPosition       Starting position of the piece
      * @param destinationPosition Destination position for the piece
      */
-    public void makeMove(Position startPosition, Position destinationPosition) {
-        pawns[destinationPosition.getRow()][destinationPosition.getColum()] = pawns[startPosition.getRow()][startPosition.getColum()];
+    private void makeMove(Position startPosition, Position destinationPosition) {
+        board[destinationPosition.getRow()][destinationPosition.getColum()] = board[startPosition.getRow()][startPosition.getColum()];
         // add the current step to the pawn step-list
-        pawns[destinationPosition.getRow()][destinationPosition.getColum()].addStep(destinationPosition.toString());
-        pawns[startPosition.getRow()][startPosition.getColum()] = null;
+        board[destinationPosition.getRow()][destinationPosition.getColum()].addStep(destinationPosition.toString());
+        board[startPosition.getRow()][startPosition.getColum()] = null;
         countMove++;
     }
 
@@ -345,7 +362,7 @@ public class GameLogic implements PlayableLogic {
      *
      * @param destinationPosition The destination position after the move
      */
-    public void checkForPossibleKills(Position destinationPosition) {
+    private void checkForPossibleKills(Position destinationPosition) {
         if (destinationPosition.isUniquePlace()) {
             checkForUniqueKill(destinationPosition);
         }
@@ -362,39 +379,43 @@ public class GameLogic implements PlayableLogic {
      * @param destinationPosition The destination position after the move.
      * @return True if a kill can occur, otherwise false.
      */
-    public void checkForCornerKill(Position destinationPosition) {
+    private void checkForCornerKill(Position destinationPosition) {
         int row = destinationPosition.getRow();
         int column = destinationPosition.getColum();
         boolean owner = getPieceAtPosition(destinationPosition).getOwner().isPlayerOne();
 
         // check for a kill in the first row.
-        if (row == 1 && pawns[0][column] != null && pawns[0][column].getOwner().isPlayerOne() != owner) {
-            ConcretePiece potentialVictim = pawns[0][column];
+        if (row == 1 && board[0][column] != null && board[0][column].getOwner().isPlayerOne() != owner) {
+            ConcretePiece potentialVictim = board[0][column];
             if (!potentialVictim.getType().equals(KING_SYMBOL)) {
-                pawns[0][column] = null;
+                ((Pawn) board[row][column]).Kill();
+                board[0][column] = null;
             }
         }
         // check for a kill in the first column
-        if (column == 1 && pawns[row][0] != null && pawns[row][0].getOwner().isPlayerOne() != owner) {
-            ConcretePiece potentialVictim = pawns[row][0];
+        if (column == 1 && board[row][0] != null && board[row][0].getOwner().isPlayerOne() != owner) {
+            ConcretePiece potentialVictim = board[row][0];
             if (!potentialVictim.getType().equals(KING_SYMBOL)) {
-                pawns[row][0] = null;
+                ((Pawn) board[row][column]).Kill();
+                board[row][0] = null;
 
             }
         }
         // check for a kill in the last row
-        if (row == 9 && pawns[10][column] != null && pawns[10][column].getOwner().isPlayerOne() != owner) {
-            ConcretePiece potentialVictim = pawns[10][column];
+        if (row == 9 && board[10][column] != null && board[10][column].getOwner().isPlayerOne() != owner) {
+            ConcretePiece potentialVictim = board[10][column];
             if (!potentialVictim.getType().equals(KING_SYMBOL)) {
-                pawns[10][column] = null;
+                ((Pawn) board[row][column]).Kill();
+                board[10][column] = null;
 
             }
         }
         // check for a kill in the last column
-        if (column == 9 && pawns[row][10] != null && pawns[row][10].getOwner().isPlayerOne() != owner) {
-            ConcretePiece potentialVictim = pawns[row][10];
+        if (column == 9 && board[row][10] != null && board[row][10].getOwner().isPlayerOne() != owner) {
+            ConcretePiece potentialVictim = board[row][10];
             if (!potentialVictim.getType().equals(KING_SYMBOL)) {
-                pawns[row][10] = null;
+                ((Pawn) board[row][column]).Kill();
+                board[row][10] = null;
             }
         }
     }
@@ -405,7 +426,7 @@ public class GameLogic implements PlayableLogic {
      *
      * @param destinationPosition The destination position after the pawn's move.
      */
-    public void checkForDirectionalKill(Position destinationPosition) {
+    private void checkForDirectionalKill(Position destinationPosition) {
         int i = destinationPosition.getRow();
         int j = destinationPosition.getColum();
         boolean owner = getPieceAtPosition(destinationPosition).getOwner().isPlayerOne();
@@ -432,9 +453,9 @@ public class GameLogic implements PlayableLogic {
     private void performDirectionalKill(int currentRow, int currentColumn, int closingRow, int closingColumn, int middleRow, int middleColumn, boolean owner) {
         // Check if indices are valid
         if (isValidIndex(closingRow, closingColumn) && isValidIndex(middleRow, middleColumn)) {
-            ConcretePiece currentPiece = pawns[currentRow][currentColumn];
-            ConcretePiece middlePiece = pawns[middleRow][middleColumn];
-            ConcretePiece closingPiece = pawns[closingRow][closingColumn];
+            ConcretePiece currentPiece = board[currentRow][currentColumn];
+            ConcretePiece middlePiece = board[middleRow][middleColumn];
+            ConcretePiece closingPiece = board[closingRow][closingColumn];
 
             // Check if all pieces involved in the kill are non-null
             if (currentPiece != null && middlePiece != null && closingPiece != null && !King_position.isEqual(new Position(middleRow, middleColumn))) {
@@ -443,8 +464,10 @@ public class GameLogic implements PlayableLogic {
                     // Check if the king is involved in the kill
                     if (currentRow == King_position.getRow() && currentColumn == King_position.getColum())
                         return;
+                    // update the numOfKills of the pawn
+                    ((Pawn) board[currentRow][currentColumn]).Kill();
                     // Perform the kill
-                    pawns[middleRow][middleColumn] = null;
+                    board[middleRow][middleColumn] = null;
                 }
             }
         }
@@ -468,32 +491,41 @@ public class GameLogic implements PlayableLogic {
      * @param destinationPosition The destination position after the pawn's move.
      */
 
-    public void checkForUniqueKill(Position destinationPosition) {
+    private void checkForUniqueKill(Position destinationPosition) {
         int i = destinationPosition.getRow();
         int j = destinationPosition.getColum();
         boolean owner = getPieceAtPosition(destinationPosition).getOwner().isPlayerOne();
         // Define unique kill positions for each corner
-        String uniqueKillPositionsUp = "(0,2)(10,2)";
-        String uniqueKillPositionsDown = "(0,8)(10,8)";
-        String uniqueKillPositionsRight = "(8,0)(8,10)";
-        String uniqueKillPositionsLeft = "(2,0)(2,10)";
+        String uniqueKillPositionsUp = "(0, 2)(10, 2)";
+        String uniqueKillPositionsDown = "(0, 8)(10, 8)";
+        String uniqueKillPositionsRight = "(8, 0)(8, 10)";
+        String uniqueKillPositionsLeft = "(2, 0)(2, 10)";
+
 
         // Check if the destination position is in the unique kill positions
         if (uniqueKillPositionsUp.contains(destinationPosition.toString())) {
-            if (performUniqueKill(i, j - 1, owner))
+            if (performUniqueKill(i, j - 1, owner)) {
+                ((Pawn) board[i][j]).Kill();
                 return;
+            }
         }
         if (uniqueKillPositionsDown.contains(destinationPosition.toString())) {
-            performUniqueKill(i, j + 1, owner);
-            return;
+           if (performUniqueKill(i, j + 1, owner)) {
+               ((Pawn) board[i][j]).Kill();
+               return;
+           }
         }
         if (uniqueKillPositionsLeft.contains(destinationPosition.toString())) {
-            if (performUniqueKill(i - 1, j, owner))
+            if (performUniqueKill(i - 1, j, owner)) {
+                ((Pawn) board[i][j]).Kill();
                 return;
+            }
         }
         if (uniqueKillPositionsRight.contains(destinationPosition.toString())) {
-            if (performUniqueKill(i + 1, j, owner))
+            if (performUniqueKill(i + 1, j, owner)) {
+                ((Pawn) board[i][j]).Kill();
                 return;
+            }
         }
     }
 
@@ -509,12 +541,12 @@ public class GameLogic implements PlayableLogic {
     private boolean performUniqueKill(int targetRow, int targetColumn, boolean owner) {
         // Check if the indices are valid
         if (isValidIndex(targetRow, targetColumn)) {
-            ConcretePiece targetPiece = pawns[targetRow][targetColumn];
+            ConcretePiece targetPiece = board[targetRow][targetColumn];
 
             // Check if the conditions for a unique kill are met
             if (targetPiece != null && targetPiece.getOwner().isPlayerOne() != owner && !targetPiece.getType().equals(KING_SYMBOL)) {
                 // Perform the unique kill
-                pawns[targetRow][targetColumn] = null;
+                board[targetRow][targetColumn] = null;
                 return true;
             }
         }
@@ -527,7 +559,7 @@ public class GameLogic implements PlayableLogic {
      *
      * @return True if the king is at a corner, otherwise false.
      */
-    public boolean isKingAtCorner() {
+    private boolean isKingAtCorner() {
         int i = King_position.getRow();
         int j = King_position.getColum();
         return (i == 0 && j == 0) || (i == 10 && j == 0) || (i == 10 && j == 10) || (i == 0 && j == 10);
@@ -538,16 +570,16 @@ public class GameLogic implements PlayableLogic {
      *
      * @return True if the king is surrounded by player one's pawns, otherwise false.
      */
-    public boolean isKingSurrouned() {
+    private boolean isKingSurrouned() {
         if (King_position.getRow() == 0 || King_position.getRow() == 10 || King_position.getColum() == 10 || King_position.getColum() == 0)
             return isKing3Surrounded();
 
         int i = King_position.getRow();
         int j = King_position.getColum();
 
-        if (pawns[i - 1][j] != null && pawns[i + 1][j] != null && pawns[i][j - 1] != null && pawns[i][j + 1] != null) {
-            return !pawns[i - 1][j].getOwner().isPlayerOne() && !pawns[i + 1][j].getOwner().isPlayerOne() && !pawns[i][j - 1].getOwner().isPlayerOne() &&
-                    !pawns[i][j + 1].getOwner().isPlayerOne();
+        if (board[i - 1][j] != null && board[i + 1][j] != null && board[i][j - 1] != null && board[i][j + 1] != null) {
+            return !board[i - 1][j].getOwner().isPlayerOne() && !board[i + 1][j].getOwner().isPlayerOne() && !board[i][j - 1].getOwner().isPlayerOne() &&
+                    !board[i][j + 1].getOwner().isPlayerOne();
         }
         return false;
 
@@ -558,73 +590,89 @@ public class GameLogic implements PlayableLogic {
      *
      * @return True if the king is surrounded by three player one's pawns and an edge, otherwise false.
      */
-    public boolean isKing3Surrounded() {
+    private boolean isKing3Surrounded() {
         int i = King_position.getRow();
         int j = King_position.getColum();
 
-        if ((j == 0) && (pawns[i - 1][j] != null) && (pawns[i + 1][j] != null) && (pawns[i][j + 1] != null)) {
-            return !pawns[i - 1][j].getOwner().isPlayerOne() && !pawns[i + 1][j].getOwner().isPlayerOne() && !pawns[i][j + 1].getOwner().isPlayerOne();
+        if ((j == 0) && (board[i - 1][j] != null) && (board[i + 1][j] != null) && (board[i][j + 1] != null)) {
+            return !board[i - 1][j].getOwner().isPlayerOne() && !board[i + 1][j].getOwner().isPlayerOne() && !board[i][j + 1].getOwner().isPlayerOne();
         }
-        if (j == 10 && pawns[i - 1][j] != null && pawns[i + 1][j] != null && pawns[i][j - 1] != null) {
-            return !pawns[i - 1][j].getOwner().isPlayerOne() && !pawns[i + 1][j].getOwner().isPlayerOne() && !pawns[i][j - 1].getOwner().isPlayerOne();
+        if (j == 10 && board[i - 1][j] != null && board[i + 1][j] != null && board[i][j - 1] != null) {
+            return !board[i - 1][j].getOwner().isPlayerOne() && !board[i + 1][j].getOwner().isPlayerOne() && !board[i][j - 1].getOwner().isPlayerOne();
         }
 
-        if ((i == 0) && (pawns[i][j - 1] != null) && (pawns[i + 1][j] != null) && (pawns[i][j + 1] != null)) {
-            return !pawns[i][j - 1].getOwner().isPlayerOne() && !pawns[i + 1][j].getOwner().isPlayerOne() && !pawns[i][j + 1].getOwner().isPlayerOne();
+        if ((i == 0) && (board[i][j - 1] != null) && (board[i + 1][j] != null) && (board[i][j + 1] != null)) {
+            return !board[i][j - 1].getOwner().isPlayerOne() && !board[i + 1][j].getOwner().isPlayerOne() && !board[i][j + 1].getOwner().isPlayerOne();
         }
-        if (i == 10 && pawns[i - 1][j] != null && pawns[i][j - 1] != null && pawns[i][j + 1] != null) {
-            return !pawns[i - 1][j].getOwner().isPlayerOne() && !pawns[i][j - 1].getOwner().isPlayerOne() && !pawns[i][j + 1].getOwner().isPlayerOne();
+        if (i == 10 && board[i - 1][j] != null && board[i][j - 1] != null && board[i][j + 1] != null) {
+            return !board[i - 1][j].getOwner().isPlayerOne() && !board[i][j - 1].getOwner().isPlayerOne() && !board[i][j + 1].getOwner().isPlayerOne();
         }
         return false;
     }
 
-    public void printSteps(int winner){
-        ArrayList<ConcretePiece> Player1Alive= new ArrayList<>();
-        ArrayList<ConcretePiece> Player2Alive= new ArrayList<>();
-        // init the arraylists  with the alive pieces
-        for (int i=0;i<BOARD_SIZE;i++) {
-            for (int j = 0; j < BOARD_SIZE; j++) {
-                if (pawns[i][j] != null) {
-                    if (pawns[i][j].getOwner().isPlayerOne()) {
-                        Player1Alive.add(pawns[i][j]);
-                    }
+    public void prints(int winnerNum){
+        printStepsList(winnerNum);
+        printKills(winnerNum);
+        printStepsAmount(winnerNum);
+    }
 
-                    else {
-                        Player2Alive.add(pawns[i][j]);
-                    }
+    public void printStepsList(int winnerNum){
+        Comparator<ConcretePiece> SortBySteps = new ConcretePieceComp("Sort by steps",winnerNum);
+        pawns.sort(SortBySteps);
 
+        for (int i=0; i<pawns.size();i++){
+            if (pawns.get(i).getSteps().size()>1) {
+                System.out.println(pawns.get(i).stepsList());
+            }
+        }
+
+        for (int i = 0; i < 75; i++) {
+            System.out.print("*");
+        }
+        System.out.println(); // Move to the next line after printing the asterisks
+
+    }
+    public void printKills(int winnerNum){
+        Comparator<ConcretePiece> SortBykills = new ConcretePieceComp("Sort by kills",winnerNum);
+
+        pawns.sort(SortBykills);
+
+        for (int i=0; i<pawns.size();i++){
+            if (!pawns.get(i).getType().equals(KING_SYMBOL)) {
+                if (((Pawn) pawns.get(i)).getNumOfkills() >0) {
+                    int kills =((Pawn) pawns.get(i)).getNumOfkills();
+                    String name= pawns.get(i).getName();
+                    System.out.println(name+": "+kills+" kills");
                 }
             }
         }
-            Player1Alive.sort(ConcretePieceComp.SortBySteps);
-            Player2Alive.sort(ConcretePieceComp.SortBySteps);
 
-            // if player one win's, print player one first
-            if (winner == 1) {
-                int i = 0;
-                while (i < Player1Alive.size()) {
-                    System.out.println(Player1Alive.get(i).stepsList());
-                    i++;
-                }
-                i=0;
-                while (i < Player2Alive.size()) {
-                    System.out.println(Player2Alive.get(i).stepsList());
-                    i++;
-                }
+        for (int i = 0; i < 75; i++) {
+            System.out.print("*");
+        }
+        System.out.println(); // Move to the next line after printing the asterisks
 
+
+    }
+
+    public void printStepsAmount(int winnerNum){
+        Comparator<ConcretePiece> SortByStepsAmount = new ConcretePieceComp("Sort by stepsAmount",winnerNum);
+
+        pawns.sort(SortByStepsAmount);
+
+        for (int i=0; i<pawns.size();i++){
+            if ( pawns.get(i).getNumOfSteps() >0) {
+                int stepsAmount = pawns.get(i).getNumOfSteps();
+                String name= pawns.get(i).getName();
+                System.out.println(name+": "+stepsAmount+" squares");
             }
-            else {
-                int j = 0;
-                while (j < Player2Alive.size()) {
-                    System.out.println(Player2Alive.get(j).stepsList());
-                    j++;
-                }
-                j = 0;
-                while (j < Player1Alive.size()) {
-                    System.out.println(Player1Alive.get(j).stepsList());
-                    j++;
-                }
-            }
+        }
+
+        for (int i = 0; i < 75; i++) {
+            System.out.print("*");
+        }
+        System.out.println(); // Move to the next line after printing the asterisks
+
     }
 
 

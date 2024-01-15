@@ -1,5 +1,5 @@
 public class ConcretePlayer implements Player {
-    private int PlayerNum; // 1 is the defender.
+    private final int PlayerNum; // 1 is the defender.
     private int WinsNum;
 
     public ConcretePlayer(int PlayerNum) {
@@ -12,6 +12,7 @@ public class ConcretePlayer implements Player {
         return PlayerNum == 1;
     }
 
+    public int getPlayerNum() {return PlayerNum;}
 
     public int getWins() {
         return WinsNum;
@@ -22,8 +23,6 @@ public class ConcretePlayer implements Player {
         this.WinsNum++;
     }
 
-    public void resetWinsNum() {
-        this.WinsNum = 0;
-    }
+
 
 }

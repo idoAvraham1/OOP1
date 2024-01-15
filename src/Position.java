@@ -16,7 +16,7 @@ public class Position {
 
     @Override
     public String toString() {
-        return "(" + this.row + "," + this.colum + ")";
+        return "(" + this.row + ", " + this.colum + ")";
     }
 
     public int getRow() {
