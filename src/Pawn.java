@@ -15,5 +15,6 @@ public class Pawn extends ConcretePiece {
     public void Kill() {
         this.NumOfkills++;
     }
+    public int getNumOfkills(){ return this.NumOfkills;}
 
 }
