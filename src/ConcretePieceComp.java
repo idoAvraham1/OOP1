@@ -2,7 +2,6 @@ import java.util.Comparator;
 
 public class ConcretePieceComp implements Comparator<ConcretePiece> {
 
-
     private final String sort_kind;
     private final int winner_num;
 
@@ -45,12 +44,23 @@ public class ConcretePieceComp implements Comparator<ConcretePiece> {
 
         return 0; // Default case
         }
-        /**
-         * Compares two ConcretePiece objects based on the "Sort by steps" criteria.
-         *
-         * @return A negative integer, zero, or a positive integer as the first argument is
-         *         less than, equal to, or greater than the second.
-         */
+    /**
+     * Compares two ConcretePiece objects based on the "Sort by steps" criteria.
+     *
+     * This method is used to determine the ordering of ConcretePiece objects when sorting
+     * a collection. The comparison is primarily based on the number of steps each piece
+     * visited and the winning side of the game. If two pieces have the same number of steps, their
+     * order is  determined by their number .
+     *
+     * @param o1 The first ConcretePiece to be compared.
+     * @param o2 The second ConcretePiece to be compared.
+     * @param o1_owner The ownership status of the first ConcretePiece.
+     * @param o2_owner The ownership status of the second ConcretePiece.
+     * @param o1_number The specific number assigned to the first ConcretePiece.
+     * @param o2_number The specific number assigned to the second ConcretePiece.
+     * @return A negative integer if the first piece is less than the second, zero if they
+     *         are equal, and a positive integer if the first piece is greater than the second.
+     */
 
         private int compareBySteps (ConcretePiece o1, ConcretePiece o2,boolean o1_owner,
         boolean o2_owner, int o1_number, int o2_number){

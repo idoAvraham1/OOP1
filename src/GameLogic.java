@@ -1,9 +1,10 @@
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.TreeMap;
 
 public class GameLogic implements PlayableLogic {
     ArrayList<ConcretePiece> pawns= new ArrayList<>();
-
+    private int[][] likePosition=new int[11][11];
     private static final int BOARD_SIZE = 11;
     private static final String KING_SYMBOL = "♔";
     public   static  boolean  Winner; // 1 or 2
@@ -45,6 +46,7 @@ public class GameLogic implements PlayableLogic {
             if (!getPieceAtPosition(b).getType().equals(KING_SYMBOL)) {
                 checkForPossibleKills(b);
             }
+
             // update the number of steps the pawn made
             updateSteps(a,b);
 
@@ -82,6 +84,14 @@ public class GameLogic implements PlayableLogic {
         board[destination_x][destination_y].updateStepsNum(ans);
     }
 
+    private void updateLikePosition(Position destination){
+
+        String pawnSteps= ((ConcretePiece)getPieceAtPosition(destination)).stepsList();
+        if (pawnSteps.contains(destination.toString())) {
+            return;   // not a new pawn that steped.
+        }
+        likePosition[destination.getRow()][destination.getColum()]++;
+    }
 
     /**
      * Retrieves the piece at a given position on the board.
@@ -244,6 +254,7 @@ public class GameLogic implements PlayableLogic {
         }
         // init the arraylist with all the pieces
           initArrayLists();
+        initLikePosition();
 
     }
 
@@ -253,6 +264,15 @@ public class GameLogic implements PlayableLogic {
                 if (board[i][j] != null) {
                     pawns.add(board[i][j]);
                 }
+            }
+        }
+    }
+
+    private void initLikePosition() {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                if (board[i][j] != null)
+                      likePosition[i][j]++;
             }
         }
     }
@@ -350,9 +370,12 @@ public class GameLogic implements PlayableLogic {
      */
     private void makeMove(Position startPosition, Position destinationPosition) {
         board[destinationPosition.getRow()][destinationPosition.getColum()] = board[startPosition.getRow()][startPosition.getColum()];
+        board[startPosition.getRow()][startPosition.getColum()] = null;
+        // update the number of pieces that stepted on b
+        updateLikePosition(destinationPosition);
         // add the current step to the pawn step-list
         board[destinationPosition.getRow()][destinationPosition.getColum()].addStep(destinationPosition.toString());
-        board[startPosition.getRow()][startPosition.getColum()] = null;
+
         countMove++;
     }
 
@@ -614,6 +637,7 @@ public class GameLogic implements PlayableLogic {
         printStepsList(winnerNum);
         printKills(winnerNum);
         printStepsAmount(winnerNum);
+        printSteptedSquare();
     }
 
     public void printStepsList(int winnerNum){
@@ -674,6 +698,47 @@ public class GameLogic implements PlayableLogic {
         System.out.println(); // Move to the next line after printing the asterisks
 
     }
+    public void printSteptedSquare(){
+        TreeMap<Position, Integer> Treemap= createTreeMap();
+        int originalSize = Treemap.size();
+
+        for (int i=0; i<originalSize;i++){
+            Position position= Treemap.firstEntry().getKey();
+            int stepted= Treemap.firstEntry().getValue();
+            Treemap.pollFirstEntry();
+            System.out.println(position.toString()+stepted+" pieces");
+
+        }
+
+        for (int i = 0; i < 75; i++) {
+            System.out.print("*");
+        }
+        System.out.println(); // Move to the next line after printing the asterisks
+    }
+    public TreeMap<Position, Integer> createTreeMap() {
+        TreeMapcomp myComp=new TreeMapcomp(likePosition);
+
+        TreeMap<Position, Integer> positionTreeMap = new TreeMap<>(myComp);
+
+        for (int i = 0; i < likePosition.length; i++) {
+            for (int j = 0; j < likePosition[i].length; j++) {
+                int cellValue = likePosition[i][j];
+              //  System.out.println(" "+cellValue);
+
+                // Check if the cell value is at least 2
+                if (cellValue >= 2) {
+                    // Create a new Position object for the current array indices
+                    Position currentPosition = new Position(i, j);
+
+                    // Add the entry to the TreeMap with the Position as the key and the cell value as the value
+                    positionTreeMap.put(currentPosition, cellValue);
+                }
+            }
+        }
+
+        return positionTreeMap;
+    }
+
 
 
 }
