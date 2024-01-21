@@ -3,24 +3,22 @@ import java.util.Comparator;
 import java.util.TreeMap;
 
 public class GameLogic implements PlayableLogic {
-    ArrayList<ConcretePiece> pawns= new ArrayList<>();
-    private int[][] likePosition=new int[11][11];
+    private final ArrayList<ConcretePiece> pawns= new ArrayList<>();
+    private final int[][] likePosition=new int[11][11]; // likeposition[i][j] equivalent to a new position with row=i, column=j
     private static final int BOARD_SIZE = 11;
     private static final String KING_SYMBOL = "♔";
-    public   static  boolean  Winner; // 1 or 2
-    private ConcretePlayer PlayerOne = new ConcretePlayer(1);
-    private ConcretePlayer PlayerTwo = new ConcretePlayer(2);
+    private static boolean  Winner; // if one of the player's won, winner=true.
+    private final ConcretePlayer PlayerOne = new ConcretePlayer(1);
+    private final ConcretePlayer PlayerTwo = new ConcretePlayer(2);
     private Position King_position;
-    private int countMove; //2 first
+    private int countMove; // a position counter to indicate who's turn.
 
-    private ConcretePiece[][] board = new ConcretePiece[11][11];
+    private ConcretePiece[][] board = new ConcretePiece[11][11]; // the board of the game, all of game properties will represented in the board
+
+
     public GameLogic() {
         Initgame();
-        PlayerOne = new ConcretePlayer(1);
-        PlayerTwo = new ConcretePlayer(2);
-        King_position = new Position(5, 5);
-        countMove = 0;
-        Winner=false;
+
     }
 
     /**
@@ -59,6 +57,11 @@ public class GameLogic implements PlayableLogic {
         // The move was not valid
         return false;
     }
+    /**
+     * check if one of the condition to end the game is statisfited,
+     * the king is surrunded or that the king escapred.
+     * if it does then it will change our winne flage to true.
+     */
     private void checkWinningTerms(){
         //if the king reached a corner, player one wins
         if (isKingAtCorner()) {
@@ -74,6 +77,13 @@ public class GameLogic implements PlayableLogic {
         }
     }
 
+    /**
+     * update the number of squares a pawn has take during he's current move
+     * use a simple furmula of distance calculation and upated the amount of square
+     *
+     * @param current Starting position of the piece
+     * @param destination  destination position for the piece
+     */
     private void updateSteps(Position current, Position destination ){
         int current_x=current.getRow();
         int current_y=current.getColum();
@@ -81,9 +91,16 @@ public class GameLogic implements PlayableLogic {
         int destination_y=destination.getColum();
         int ans= Math.abs((current_x-destination_x)+(current_y-destination_y));
 
-        board[destination_x][destination_y].updateStepsNum(ans);
+        board[destination_x][destination_y].updateSquaresNum(ans);
     }
 
+    /**
+     * update for the destination position the number of pawn's steped on it
+     * the method will update the number only if its the first time that the pawn
+     * has steped that position.  by checking the history of steps of the pawn.
+     *
+     * @param  destination  destination position for the piece
+     */
     private void updateLikePosition(Position destination){
 
         String pawnSteps= ((ConcretePiece)getPieceAtPosition(destination)).stepsList();
@@ -149,9 +166,6 @@ public class GameLogic implements PlayableLogic {
      * Resets the game to its initial state.
      */
     public void reset() {
-
-        countMove = 0;
-        UpdateKingPosition(new Position(5, 5));
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board.length; j++)
                 board[i][j] = null;
@@ -183,6 +197,9 @@ public class GameLogic implements PlayableLogic {
      * Initializes the game board with pieces in their starting positions.
      */
     private void Initgame() {
+        King_position = new Position(5, 5);
+        countMove = 0;
+        Winner=false;
         board[5][3] = new Pawn(PlayerOne, "D1");
         board[5][3].addStep(new Position(5,3).toString());
 
@@ -257,7 +274,9 @@ public class GameLogic implements PlayableLogic {
         initLikePosition();
 
     }
-
+    /**
+     * init the collection of the pawns with the pawn on the board
+     */
     private void initArrayLists() {
         for (int i = 0; i < BOARD_SIZE; i++) {
             for (int j = 0; j < BOARD_SIZE; j++) {
@@ -267,7 +286,10 @@ public class GameLogic implements PlayableLogic {
             }
         }
     }
-
+    /**
+     * init the like position array with the updated number of steps after init the game
+     * with the pawns on the board.
+     */
     private void initLikePosition() {
         for (int i = 0; i < BOARD_SIZE; i++) {
             for (int j = 0; j < BOARD_SIZE; j++) {
@@ -386,9 +408,11 @@ public class GameLogic implements PlayableLogic {
      * @param destinationPosition The destination position after the move
      */
     private void checkForPossibleKills(Position destinationPosition) {
+        // if the destination is a unique spot, check for unique kill
         if (destinationPosition.isUniquePlace()) {
             checkForUniqueKill(destinationPosition);
         }
+        // if the destination is on the edge, check for edge kill
         if (destinationPosition.isEdge()) {
             checkForCornerKill(destinationPosition);
         }
@@ -400,7 +424,6 @@ public class GameLogic implements PlayableLogic {
      * Determines if the destination position leads to a corner-kill and validates if a kill happens at that corner.
      *
      * @param destinationPosition The destination position after the move.
-     * @return True if a kill can occur, otherwise false.
      */
     private void checkForCornerKill(Position destinationPosition) {
         int row = destinationPosition.getRow();
@@ -411,6 +434,7 @@ public class GameLogic implements PlayableLogic {
         if (row == 1 && board[0][column] != null && board[0][column].getOwner().isPlayerOne() != owner) {
             ConcretePiece potentialVictim = board[0][column];
             if (!potentialVictim.getType().equals(KING_SYMBOL)) {
+                // update the numOfKills of the pawn that killed
                 ((Pawn) board[row][column]).Kill();
                 board[0][column] = null;
             }
@@ -419,6 +443,7 @@ public class GameLogic implements PlayableLogic {
         if (column == 1 && board[row][0] != null && board[row][0].getOwner().isPlayerOne() != owner) {
             ConcretePiece potentialVictim = board[row][0];
             if (!potentialVictim.getType().equals(KING_SYMBOL)) {
+                // update the numOfKills of the pawn that killed
                 ((Pawn) board[row][column]).Kill();
                 board[row][0] = null;
 
@@ -428,6 +453,7 @@ public class GameLogic implements PlayableLogic {
         if (row == 9 && board[10][column] != null && board[10][column].getOwner().isPlayerOne() != owner) {
             ConcretePiece potentialVictim = board[10][column];
             if (!potentialVictim.getType().equals(KING_SYMBOL)) {
+                // update the numOfKills of the pawn that killed
                 ((Pawn) board[row][column]).Kill();
                 board[10][column] = null;
 
@@ -437,6 +463,8 @@ public class GameLogic implements PlayableLogic {
         if (column == 9 && board[row][10] != null && board[row][10].getOwner().isPlayerOne() != owner) {
             ConcretePiece potentialVictim = board[row][10];
             if (!potentialVictim.getType().equals(KING_SYMBOL)) {
+
+                // update the numOfKills of the pawn that killed
                 ((Pawn) board[row][column]).Kill();
                 board[row][10] = null;
             }
@@ -487,7 +515,7 @@ public class GameLogic implements PlayableLogic {
                     // Check if the king is involved in the kill
                     if (currentRow == King_position.getRow() && currentColumn == King_position.getColum())
                         return;
-                    // update the numOfKills of the pawn
+                    // update the numOfKills of the pawn that killed
                     ((Pawn) board[currentRow][currentColumn]).Kill();
                     // Perform the kill
                     board[middleRow][middleColumn] = null;
@@ -617,22 +645,29 @@ public class GameLogic implements PlayableLogic {
         int i = King_position.getRow();
         int j = King_position.getColum();
 
-        if ((j == 0) && (board[i - 1][j] != null) && (board[i + 1][j] != null) && (board[i][j + 1] != null)) {
+        if ((j == 0) && (i!=10) && (i!=0) && (board[i - 1][j] != null) && (board[i + 1][j] != null) && (board[i][j + 1] != null)) {
             return !board[i - 1][j].getOwner().isPlayerOne() && !board[i + 1][j].getOwner().isPlayerOne() && !board[i][j + 1].getOwner().isPlayerOne();
         }
-        if (j == 10 && board[i - 1][j] != null && board[i + 1][j] != null && board[i][j - 1] != null) {
+        if ((j == 10) && (i!=10) && (i!=0) && board[i - 1][j] != null && board[i + 1][j] != null && board[i][j - 1] != null) {
             return !board[i - 1][j].getOwner().isPlayerOne() && !board[i + 1][j].getOwner().isPlayerOne() && !board[i][j - 1].getOwner().isPlayerOne();
         }
 
-        if ((i == 0) && (board[i][j - 1] != null) && (board[i + 1][j] != null) && (board[i][j + 1] != null)) {
+        if ((i == 0) && (j!=10) &&  (j!=0) && (board[i][j - 1] != null) && (board[i + 1][j] != null) && (board[i][j + 1] != null)) {
             return !board[i][j - 1].getOwner().isPlayerOne() && !board[i + 1][j].getOwner().isPlayerOne() && !board[i][j + 1].getOwner().isPlayerOne();
         }
-        if (i == 10 && board[i - 1][j] != null && board[i][j - 1] != null && board[i][j + 1] != null) {
+        if ((i == 10) && (j!=10) && (j!=0) && board[i - 1][j] != null && board[i][j - 1] != null && board[i][j + 1] != null) {
             return !board[i - 1][j].getOwner().isPlayerOne() && !board[i][j - 1].getOwner().isPlayerOne() && !board[i][j + 1].getOwner().isPlayerOne();
         }
         return false;
     }
 
+    /**
+     * This method prints the game statistics based on the specified order and criteria.
+     * It includes printing the step list, number of kills, number of squares stepped on,
+     * and the number of different pawns that stepped on each position.
+     *
+     * @param winnerNum The number representing the winning player.
+     */
     public void prints(int winnerNum){
         printStepsList(winnerNum);
         printKills(winnerNum);
@@ -640,7 +675,13 @@ public class GameLogic implements PlayableLogic {
         printSteptedSquare();
     }
 
-    public void printStepsList(int winnerNum){
+    /**
+     * This method prints the step list of each pawn, sorted by the number of steps,
+     * using a custom comparator.
+     *
+     * @param winnerNum The number representing the winning player.
+     */
+    private void printStepsList(int winnerNum){
         Comparator<ConcretePiece> SortBySteps = new ConcretePieceComp("Sort by steps",winnerNum);
         pawns.sort(SortBySteps);
 
@@ -656,7 +697,14 @@ public class GameLogic implements PlayableLogic {
         System.out.println(); // Move to the next line after printing the asterisks
 
     }
-    public void printKills(int winnerNum){
+
+    /**
+     * This method prints the number of kills for each pawn, sorted by kills,
+     * using a custom comparator.
+     *
+     * @param winnerNum The number representing the winning player.
+     */
+    private void printKills(int winnerNum){
         Comparator<ConcretePiece> SortBykills = new ConcretePieceComp("Sort by kills",winnerNum);
 
         pawns.sort(SortBykills);
@@ -679,14 +727,20 @@ public class GameLogic implements PlayableLogic {
 
     }
 
-    public void printStepsAmount(int winnerNum){
+    /**
+     * This  method prints the number of squares each pawn has stepped on,
+     * sorted by steps amount, using a custom comparator.
+     *
+     * @param winnerNum The number representing the winning player.
+     */
+    private void printStepsAmount(int winnerNum){
         Comparator<ConcretePiece> SortByStepsAmount = new ConcretePieceComp("Sort by stepsAmount",winnerNum);
 
         pawns.sort(SortByStepsAmount);
 
         for (int i=0; i<pawns.size();i++){
-            if ( pawns.get(i).getNumOfSteps() >0) {
-                int stepsAmount = pawns.get(i).getNumOfSteps();
+            if ( pawns.get(i).getNumOfSquares() >0) {
+                int stepsAmount = pawns.get(i).getNumOfSquares();
                 String name= pawns.get(i).getName();
                 System.out.println(name+": "+stepsAmount+" squares");
             }
@@ -698,13 +752,24 @@ public class GameLogic implements PlayableLogic {
         System.out.println(); // Move to the next line after printing the asterisks
 
     }
-    public void printSteptedSquare(){
+
+    /**
+     * This  method prints the number of different pawns that stepped on each position
+     * by creating a sorted TreeMap with the current stats and iterating through the tree.
+     */
+    private void printSteptedSquare(){
         TreeMap<Position, Integer> Treemap= createTreeMap();
         int originalSize = Treemap.size();
 
+
+        // iterate over the tree and print the number of stepped pawns
         for (int i=0; i<originalSize;i++){
+            // print the first position each time
             Position position= Treemap.firstEntry().getKey();
+
             int stepted= Treemap.firstEntry().getValue();
+
+            // remove the first position in the tree
             Treemap.pollFirstEntry();
             System.out.println(position.toString()+stepted+" pieces");
 
@@ -715,15 +780,26 @@ public class GameLogic implements PlayableLogic {
         }
         System.out.println(); // Move to the next line after printing the asterisks
     }
-    public TreeMap<Position, Integer> createTreeMap() {
-        TreeMapcomp myComp=new TreeMapcomp(likePosition);
 
+    /**
+     * This method creates a TreeMap where the position is used as the key, and an integer represents
+     * the count of different pawns that have stepped on each position. The TreeMap is sorted based on
+     * the count of pawns in descending order.
+     * The method iterates over a two-dimensional array representing positions and counts, and uses
+     * a custom comparator to sort the TreeMap according to the desired order.
+     *
+     * @return TreeMap<Position, Integer> - A TreeMap sorted by the number of pawns stepped on each position.
+     */
+    private TreeMap<Position, Integer> createTreeMap() {
+        // Instantiate a custom comparator for sorting the TreeMap
+        TreeMapcomp myComp=new TreeMapcomp(likePosition);
+        // Create a TreeMap with the custom comparator for sorting
         TreeMap<Position, Integer> positionTreeMap = new TreeMap<>(myComp);
 
+        // Iterate over the two-dimensional array of positions and counts
         for (int i = 0; i < likePosition.length; i++) {
             for (int j = 0; j < likePosition[i].length; j++) {
                 int cellValue = likePosition[i][j];
-              //  System.out.println(" "+cellValue);
 
                 // Check if the cell value is at least 2
                 if (cellValue >= 2) {
@@ -734,6 +810,7 @@ public class GameLogic implements PlayableLogic {
                     positionTreeMap.put(currentPosition, cellValue);
                 }
             }
+
         }
 
         return positionTreeMap;

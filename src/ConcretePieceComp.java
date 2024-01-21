@@ -1,9 +1,12 @@
 import java.util.Comparator;
-
+/**
+ * This class implements a Comparator for ConcretePiece objects, allowing customization
+ * of the sorting criteria based on specified attributes.
+ */
 public class ConcretePieceComp implements Comparator<ConcretePiece> {
 
-    private final String sort_kind;
-    private final int winner_num;
+    private final String sort_kind; // Sorting criteria identifier
+    private final int winner_num; // Player number of the winner
 
     public ConcretePieceComp(String sort_kind, int winner_num) {
         this.sort_kind = sort_kind;
@@ -138,8 +141,8 @@ public class ConcretePieceComp implements Comparator<ConcretePiece> {
      */
     private int compareByStepsAmount(ConcretePiece o1, ConcretePiece o2, boolean o1_owner,
                                      boolean o2_owner, int o1_number, int o2_number) {
-        int stepsAmountO1 = o1.getNumOfSteps();
-        int stepsAmountO2 = o2.getNumOfSteps();
+        int stepsAmountO1 = o1.getNumOfSquares();
+        int stepsAmountO2 = o2.getNumOfSquares();
 
         if (stepsAmountO1 > stepsAmountO2) {
             return -1;

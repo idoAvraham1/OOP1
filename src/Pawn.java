@@ -1,5 +1,6 @@
 public class Pawn extends ConcretePiece {
-    private int NumOfkills;
+
+    private int NumOfkills; // number of kills the pawn has made.
 
     public Pawn(Player owner, String name) {
         super((ConcretePlayer) owner, name);
