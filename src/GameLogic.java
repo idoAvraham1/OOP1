@@ -4,7 +4,6 @@ import java.util.TreeMap;
 /**
  * The `GameLogic` class implements the `PlayableLogic` interface and serves as the core logic for a two-player board game.
  * It manages the game state, player turns, and the interaction between players and the game board.
- *
  * Properties:
  * - `pawns`: An `ArrayList` containing instances of `ConcretePiece` representing the pawns on the game board.
  * - `likePosition`: A 2D array representing potential positions on the board for game pieces.
@@ -16,7 +15,6 @@ import java.util.TreeMap;
  * - `King_position`: A `Position` object representing the current position of the king on the board.
  * - `countMove`: An integer counter to keep track of the number of moves and determine player turns.
  * - `board`: A 2D array of `ConcretePiece` representing the game board and its properties.
- *
  * Note: The game logic assumes a board size of 11x11 and uses a custom symbol for the king piece.
  * Players take turns making moves, and the game continues until one player is declared the winner.
  */
@@ -31,7 +29,7 @@ public class GameLogic implements PlayableLogic {
     private Position King_position;
     private int countMove;
 
-    private ConcretePiece[][] board = new ConcretePiece[11][11];
+    private final ConcretePiece[][] board = new ConcretePiece[11][11];
 
 
     public GameLogic() {
@@ -601,7 +599,6 @@ public class GameLogic implements PlayableLogic {
         if (uniqueKillPositionsRight.contains(destinationPosition.toString())) {
             if (performUniqueKill(i + 1, j, owner)) {
                 ((Pawn) board[i][j]).Kill();
-                return;
             }
         }
     }
@@ -711,9 +708,9 @@ public class GameLogic implements PlayableLogic {
         Comparator<ConcretePiece> SortBySteps = new ConcretePieceComp("Sort by steps",winnerNum);
         pawns.sort(SortBySteps);
 
-        for (int i=0; i<pawns.size();i++){
-            if (pawns.get(i).getSteps().size()>1) {
-                System.out.println(pawns.get(i).stepsList());
+        for (ConcretePiece pawn : pawns) {
+            if (pawn.getSteps().size() > 1) {
+                System.out.println(pawn.stepsList());
             }
         }
 
@@ -735,12 +732,12 @@ public class GameLogic implements PlayableLogic {
 
         pawns.sort(SortBykills);
 
-        for (int i=0; i<pawns.size();i++){
-            if (!pawns.get(i).getType().equals(KING_SYMBOL)) {
-                if (((Pawn) pawns.get(i)).getNumOfkills() >0) {
-                    int kills =((Pawn) pawns.get(i)).getNumOfkills();
-                    String name= pawns.get(i).getName();
-                    System.out.println(name+": "+kills+" kills");
+        for (ConcretePiece pawn : pawns) {
+            if (!pawn.getType().equals(KING_SYMBOL)) {
+                if (((Pawn) pawn).getNumOfkills() > 0) {
+                    int kills = ((Pawn) pawn).getNumOfkills();
+                    String name = pawn.getName();
+                    System.out.println(name + ": " + kills + " kills");
                 }
             }
         }
@@ -764,11 +761,11 @@ public class GameLogic implements PlayableLogic {
 
         pawns.sort(SortByStepsAmount);
 
-        for (int i=0; i<pawns.size();i++){
-            if ( pawns.get(i).getNumOfSquares() >0) {
-                int stepsAmount = pawns.get(i).getNumOfSquares();
-                String name= pawns.get(i).getName();
-                System.out.println(name+": "+stepsAmount+" squares");
+        for (ConcretePiece pawn : pawns) {
+            if (pawn.getNumOfSquares() > 0) {
+                int stepsAmount = pawn.getNumOfSquares();
+                String name = pawn.getName();
+                System.out.println(name + ": " + stepsAmount + " squares");
             }
         }
 
