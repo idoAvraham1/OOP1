@@ -1,19 +1,37 @@
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.TreeMap;
-
+/**
+ * The `GameLogic` class implements the `PlayableLogic` interface and serves as the core logic for a two-player board game.
+ * It manages the game state, player turns, and the interaction between players and the game board.
+ *
+ * Properties:
+ * - `pawns`: An `ArrayList` containing instances of `ConcretePiece` representing the pawns on the game board.
+ * - `likePosition`: A 2D array representing potential positions on the board for game pieces.
+ * - `BOARD_SIZE`: A constant integer defining the size of the game board.
+ * - `KING_SYMBOL`: A constant string representing the symbol for the king piece on the board.
+ * - `Winner`: A boolean indicating whether one of the players has won the game.
+ * - `PlayerOne`: An instance of `ConcretePlayer` representing Player One.
+ * - `PlayerTwo`: An instance of `ConcretePlayer` representing Player Two.
+ * - `King_position`: A `Position` object representing the current position of the king on the board.
+ * - `countMove`: An integer counter to keep track of the number of moves and determine player turns.
+ * - `board`: A 2D array of `ConcretePiece` representing the game board and its properties.
+ *
+ * Note: The game logic assumes a board size of 11x11 and uses a custom symbol for the king piece.
+ * Players take turns making moves, and the game continues until one player is declared the winner.
+ */
 public class GameLogic implements PlayableLogic {
     private final ArrayList<ConcretePiece> pawns= new ArrayList<>();
-    private final int[][] likePosition=new int[11][11]; // likeposition[i][j] equivalent to a new position with row=i, column=j
+    private final int[][] likePosition=new int[11][11];
     private static final int BOARD_SIZE = 11;
     private static final String KING_SYMBOL = "♔";
-    private static boolean  Winner; // if one of the player's won, winner=true.
+    private static boolean  Winner;
     private final ConcretePlayer PlayerOne = new ConcretePlayer(1);
     private final ConcretePlayer PlayerTwo = new ConcretePlayer(2);
     private Position King_position;
-    private int countMove; // a position counter to indicate who's turn.
+    private int countMove;
 
-    private ConcretePiece[][] board = new ConcretePiece[11][11]; // the board of the game, all of game properties will represented in the board
+    private ConcretePiece[][] board = new ConcretePiece[11][11];
 
 
     public GameLogic() {
@@ -278,6 +296,7 @@ public class GameLogic implements PlayableLogic {
      * init the collection of the pawns with the pawn on the board
      */
     private void initArrayLists() {
+        pawns.clear();
         for (int i = 0; i < BOARD_SIZE; i++) {
             for (int j = 0; j < BOARD_SIZE; j++) {
                 if (board[i][j] != null) {
@@ -291,6 +310,13 @@ public class GameLogic implements PlayableLogic {
      * with the pawns on the board.
      */
     private void initLikePosition() {
+
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                 likePosition[i][j]=0;
+            }
+        }
+
         for (int i = 0; i < BOARD_SIZE; i++) {
             for (int j = 0; j < BOARD_SIZE; j++) {
                 if (board[i][j] != null)
