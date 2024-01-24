@@ -32,6 +32,18 @@ public class GameLogic implements PlayableLogic {
     private final ConcretePiece[][] board = new ConcretePiece[11][11];
 
 
+
+    private String[][] boardLayout = {{"x",".",".","A1","A2","A3","A4","A5",".",".","x"},
+                                        {".",".",".",".",".","A6",".",".",".",".","."},
+                                        {".",".",".",".",".",".",".",".",".",".","."},
+                                        {"A7",".",".",".",".","D1",".",".",".",".","A8"},
+                                        {"A9",".",".",".","D2","D3","D4",".",".",".","A10"},
+                                        {"A11","A12",".","D5","D6","K7","D8","D9",".","A13","A14"},
+                                        {"A15",".",".",".","D10","D11","D12",".",".",".","A16"},
+                                        {"A17",".",".",".",".","D13",".",".",".",".","A18"},
+                                        {".",".",".",".",".",".",".",".",".",".","."},
+                                        {".",".",".",".",".","A19",".",".",".",".","."},
+                                        {"x",".",".","A20","A21","A22","A23","A24",".",".","x"}};
     public GameLogic() {
         Initgame();
 
@@ -58,7 +70,8 @@ public class GameLogic implements PlayableLogic {
 
             // Check for possible kills after the move, if the the one moving isn't the king
             if (!getPieceAtPosition(b).getType().equals(KING_SYMBOL)) {
-                checkForPossibleKills(b);
+
+                kill(b);
             }
 
             // update the number of steps the pawn made
@@ -216,77 +229,25 @@ public class GameLogic implements PlayableLogic {
         King_position = new Position(5, 5);
         countMove = 0;
         Winner=false;
-        board[5][3] = new Pawn(PlayerOne, "D1");
-        board[5][3].addStep(new Position(5,3).toString());
-
-        board[5][5] = new King(PlayerOne, "K7");
-        board[5][5].addStep(new Position(5,5).toString());
-
-        board[5][7] = new Pawn(PlayerOne, "D13");
-        board[5][7].addStep(new Position(5,7).toString());
-
-        for (int i = 4; i < 7; i++) {
-            board[i][4] = new Pawn(PlayerOne, "D"+(i-2));
-            board[i][4].addStep(new Position(i,4).toString());
-        }
-        for (int i = 3; i < 8; i++) {
-            if (i == 5) {
-                continue;
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                if(boardLayout[i][j].contains("A")){
+                    board[j][i] = new Pawn(PlayerTwo, boardLayout[i][j]);
+                    board[j][i].addStep(new Position(j,i).toString());
+                }
+                if(boardLayout[i][j].contains("D")){
+                    board[j][i] = new Pawn(PlayerOne, boardLayout[i][j]);
+                    board[j][i].addStep(new Position(j,i).toString());
+                }
+                if(boardLayout[i][j].contains("K")){
+                    board[j][i] = new King(PlayerOne, boardLayout[i][j]);
+                    board[j][i].addStep(new Position(j,i).toString());
+                }
             }
-            board[i][5] = new Pawn(PlayerOne, "D"+(i+2));
-            board[i][5].addStep(new Position(i,5).toString());
         }
 
-        for (int i = 4; i < 7; i++) {
-            board[i][6] = new Pawn(PlayerOne, "D"+(i+6));
-            board[i][6].addStep(new Position(i,6).toString());
-        }
-
-
-        board[5][1] = new Pawn(PlayerTwo, "A6");
-        board[5][1].addStep(new Position(5,1).toString());
-        for (int i = 3; i < 8; i++) {
-            board[i][0] = new Pawn(PlayerTwo, "A"+(i-2));
-            board[i][0].addStep(new Position(i,0).toString());
-        }
-        board[1][5] = new Pawn(PlayerTwo, "A12");
-        board[1][5].addStep(new Position(1,5).toString());
-        int j=7;
-        for (int i = 3; i < 8; i++) {
-            if (i==6){
-                board[0][i] = new Pawn(PlayerTwo, "A15");
-                board[0][i].addStep(new Position(0,i).toString());
-                j=17;
-                continue;
-            }
-            board[0][i] = new Pawn(PlayerTwo, "A"+(j));
-            board[0][i].addStep(new Position(0,i).toString());
-            j=j+2;
-        }
-        j=20;
-        board[5][9] = new Pawn(PlayerTwo, "A19");
-        board[5][9].addStep(new Position(5,9).toString());
-        for (int i = 3; i < 8; i++) {
-            board[i][10] = new Pawn(PlayerTwo, "A"+j);
-            board[i][10].addStep(new Position(i,10).toString());
-            j++;
-        }
-        board[9][5] = new Pawn(PlayerTwo, "A13");
-        board[9][5].addStep(new Position(9,5).toString());
-        j=8;
-        for (int i = 3; i < 8; i++) {
-            if (i==5){
-                board[10][i] = new Pawn(PlayerTwo, "A14");
-                board[10][i].addStep(new Position(10,i).toString());
-                j=16;
-                continue;
-            }
-            board[10][i] = new Pawn(PlayerTwo, "A"+j);
-            board[10][i].addStep(new Position(10,i).toString());
-            j=j+2;
-        }
         // init the arraylist with all the pieces
-          initArrayLists();
+        initArrayLists();
         initLikePosition();
 
     }
@@ -424,209 +385,6 @@ public class GameLogic implements PlayableLogic {
 
         countMove++;
     }
-
-    /**
-     * Checks for possible kills after moving a pawn to the destination position.
-     * Determines the type of position and checks if a kill can happen at that position after the move.
-     *
-     * @param destinationPosition The destination position after the move
-     */
-    private void checkForPossibleKills(Position destinationPosition) {
-        // if the destination is a unique spot, check for unique kill
-        if (destinationPosition.isUniquePlace()) {
-            checkForUniqueKill(destinationPosition);
-        }
-        // if the destination is on the edge, check for edge kill
-        if (destinationPosition.isEdge()) {
-            checkForCornerKill(destinationPosition);
-        }
-        checkForDirectionalKill(destinationPosition);
-    }
-
-    /**
-     * Checks if a corner-kill can occur after moving a pawn to position b.
-     * Determines if the destination position leads to a corner-kill and validates if a kill happens at that corner.
-     *
-     * @param destinationPosition The destination position after the move.
-     */
-    private void checkForCornerKill(Position destinationPosition) {
-        int row = destinationPosition.getRow();
-        int column = destinationPosition.getColum();
-        boolean owner = getPieceAtPosition(destinationPosition).getOwner().isPlayerOne();
-
-        // check for a kill in the first row.
-        if (row == 1 && board[0][column] != null && board[0][column].getOwner().isPlayerOne() != owner) {
-            ConcretePiece potentialVictim = board[0][column];
-            if (!potentialVictim.getType().equals(KING_SYMBOL)) {
-                // update the numOfKills of the pawn that killed
-                ((Pawn) board[row][column]).Kill();
-                board[0][column] = null;
-            }
-        }
-        // check for a kill in the first column
-        if (column == 1 && board[row][0] != null && board[row][0].getOwner().isPlayerOne() != owner) {
-            ConcretePiece potentialVictim = board[row][0];
-            if (!potentialVictim.getType().equals(KING_SYMBOL)) {
-                // update the numOfKills of the pawn that killed
-                ((Pawn) board[row][column]).Kill();
-                board[row][0] = null;
-
-            }
-        }
-        // check for a kill in the last row
-        if (row == 9 && board[10][column] != null && board[10][column].getOwner().isPlayerOne() != owner) {
-            ConcretePiece potentialVictim = board[10][column];
-            if (!potentialVictim.getType().equals(KING_SYMBOL)) {
-                // update the numOfKills of the pawn that killed
-                ((Pawn) board[row][column]).Kill();
-                board[10][column] = null;
-
-            }
-        }
-        // check for a kill in the last column
-        if (column == 9 && board[row][10] != null && board[row][10].getOwner().isPlayerOne() != owner) {
-            ConcretePiece potentialVictim = board[row][10];
-            if (!potentialVictim.getType().equals(KING_SYMBOL)) {
-
-                // update the numOfKills of the pawn that killed
-                ((Pawn) board[row][column]).Kill();
-                board[row][10] = null;
-            }
-        }
-    }
-
-    /**
-     * Checks if a directional kill can occur after moving a pawn to the destination position.
-     * Examines different directional movements to detect potential kills after the pawn's move.
-     *
-     * @param destinationPosition The destination position after the pawn's move.
-     */
-    private void checkForDirectionalKill(Position destinationPosition) {
-        int i = destinationPosition.getRow();
-        int j = destinationPosition.getColum();
-        boolean owner = getPieceAtPosition(destinationPosition).getOwner().isPlayerOne();
-
-        // Check for potential kills in different directions
-        performDirectionalKill(i, j, i - 2, j, i - 1, j, owner);
-        performDirectionalKill(i, j, i + 2, j, i + 1, j, owner);
-        performDirectionalKill(i, j, i, j - 2, i, j - 1, owner);
-        performDirectionalKill(i, j, i, j + 2, i, j + 1, owner);
-    }
-
-    /**
-     * Checks and performs a directional kill if the conditions are met.
-     * Checks if a pawn can perform a kill in a specific direction after moving.
-     *
-     * @param currentRow    The current row of the pawn that moved.
-     * @param currentColumn The current column of the pawn that moved.
-     * @param middleRow     The  row where the target is located.
-     * @param middleColumn  The  column where the target is located.
-     * @param closingRow    The closing row between the row of the current mov and the target row.
-     * @param closingColumn The closing column between the column of the current move and the target column.
-     * @param owner         The owner of the moving pawn.
-     */
-    private void performDirectionalKill(int currentRow, int currentColumn, int closingRow, int closingColumn, int middleRow, int middleColumn, boolean owner) {
-        // Check if indices are valid
-        if (isValidIndex(closingRow, closingColumn) && isValidIndex(middleRow, middleColumn)) {
-            ConcretePiece currentPiece = board[currentRow][currentColumn];
-            ConcretePiece middlePiece = board[middleRow][middleColumn];
-            ConcretePiece closingPiece = board[closingRow][closingColumn];
-
-            // Check if all pieces involved in the kill are non-null
-            if (currentPiece != null && middlePiece != null && closingPiece != null && !King_position.isEqual(new Position(middleRow, middleColumn))) {
-                // Check if the conditions for a kill are met
-                if (middlePiece.getOwner().isPlayerOne() != owner && closingPiece.getOwner().isPlayerOne() == owner) {
-                    // Check if the king is involved in the kill
-                    if (currentRow == King_position.getRow() && currentColumn == King_position.getColum())
-                        return;
-                    // update the numOfKills of the pawn that killed
-                    ((Pawn) board[currentRow][currentColumn]).Kill();
-                    // Perform the kill
-                    board[middleRow][middleColumn] = null;
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks if the provided row and column indices are within the valid range of the board.
-     *
-     * @param row    The row index.
-     * @param column The column index.
-     * @return True if the indices are valid, otherwise false.
-     */
-    private boolean isValidIndex(int row, int column) {
-        return row >= 0 && row < BOARD_SIZE && column >= 0 && column < BOARD_SIZE;
-    }
-
-    /**
-     * Checks if a move results in a unique kill, trapping an opponent's pawn at the board corners.
-     * Examines the destination position after a pawn move to detect unique kills near the board corners.
-     *
-     * @param destinationPosition The destination position after the pawn's move.
-     */
-
-    private void checkForUniqueKill(Position destinationPosition) {
-        int i = destinationPosition.getRow();
-        int j = destinationPosition.getColum();
-        boolean owner = getPieceAtPosition(destinationPosition).getOwner().isPlayerOne();
-        // Define unique kill positions for each corner
-        String uniqueKillPositionsUp = "(0, 2)(10, 2)";
-        String uniqueKillPositionsDown = "(0, 8)(10, 8)";
-        String uniqueKillPositionsRight = "(8, 0)(8, 10)";
-        String uniqueKillPositionsLeft = "(2, 0)(2, 10)";
-
-
-        // Check if the destination position is in the unique kill positions
-        if (uniqueKillPositionsUp.contains(destinationPosition.toString())) {
-            if (performUniqueKill(i, j - 1, owner)) {
-                ((Pawn) board[i][j]).Kill();
-                return;
-            }
-        }
-        if (uniqueKillPositionsDown.contains(destinationPosition.toString())) {
-           if (performUniqueKill(i, j + 1, owner)) {
-               ((Pawn) board[i][j]).Kill();
-               return;
-           }
-        }
-        if (uniqueKillPositionsLeft.contains(destinationPosition.toString())) {
-            if (performUniqueKill(i - 1, j, owner)) {
-                ((Pawn) board[i][j]).Kill();
-                return;
-            }
-        }
-        if (uniqueKillPositionsRight.contains(destinationPosition.toString())) {
-            if (performUniqueKill(i + 1, j, owner)) {
-                ((Pawn) board[i][j]).Kill();
-            }
-        }
-    }
-
-    /**
-     * Checks and performs a unique kill if the conditions are met.
-     * Checks if a pawn can perform a unique kill in a specific direction after moving.
-     *
-     * @param targetRow    The row where the target is located.
-     * @param targetColumn The column where the target is located.
-     * @param owner        The owner of the moving pawn.
-     * return True if a unique kill occurs, otherwise false.
-     */
-    private boolean performUniqueKill(int targetRow, int targetColumn, boolean owner) {
-        // Check if the indices are valid
-        if (isValidIndex(targetRow, targetColumn)) {
-            ConcretePiece targetPiece = board[targetRow][targetColumn];
-
-            // Check if the conditions for a unique kill are met
-            if (targetPiece != null && targetPiece.getOwner().isPlayerOne() != owner && !targetPiece.getType().equals(KING_SYMBOL)) {
-                // Perform the unique kill
-                board[targetRow][targetColumn] = null;
-                return true;
-            }
-        }
-        return false;
-    }
-
 
     /**
      * Checks if the king is positioned at one of the corners of the board.
@@ -837,6 +595,164 @@ public class GameLogic implements PlayableLogic {
         }
 
         return positionTreeMap;
+    }
+
+    /**
+     * @param b
+     * getNeighbors creates positions which is an array of 8 positions.
+     * the first of which is directly above to the position
+     * where the piece moved the other 3 are clockwise, and the last four are
+     * compatible but two squares away.
+     * in the same direction. First, the function checks to see if there is
+     * a valid position adjacent to where the player just moved his
+     * piece. If there is one it adds ut to the array.
+     * if not the cell stays null, so we could indicate if the piece
+     * has moved to an edge location on the board
+     * or if he is near an edge location by the two squares away part
+     * @return positions = [up1, right1, down1, left1, up2, right2, down2, left2]
+
+     */
+    private Position[] getNeighbors(Position b){
+        Position[] positions = new Position[8];
+        int col = b.getColum();
+        int row = b.getRow();
+        //Up:
+        if(col > 0 && !(col == 1 && (row == 0 || row == 10))){
+            positions[0] = new Position(row , col - 1);
+        }
+
+        //Right:
+        if(row < 10 && !(row == 9 && (col == 0 || col == 10))){
+            positions[1] = new Position(row + 1 , col);
+        }
+
+        //Down:
+        if(col < 10 && !(col == 9 && (row == 0 || row == 10))){
+            positions[2] = new Position(row , col + 1);
+        }
+
+        //Left:
+        if(row > 0 && !(row == 1 && (col == 0 || col == 10))){
+            positions[3] = new Position(row - 1 , col);
+        }
+
+        //Up2:
+        if(col > 1 && !(col == 2 && (row == 0 || row == 10))){
+            positions[4] = new Position(row , col - 2);
+        }
+
+        //Right2:
+        if(row < 9 && !(row == 8 && (col == 0 || col == 10))){
+            positions[5] = new Position(row + 2 , col);
+        }
+
+        //Down2:
+        if(col < 9 && !(col == 8 && (row == 0 || row == 10))){
+            positions[6] = new Position(row , col + 2);
+        }
+
+        //Left2:
+        if(row > 1 && !(row == 2 && (col == 0 || col == 10))){
+            positions[7] = new Position(row - 2 , col);
+        }
+
+
+
+        return positions;
+    }
+
+    /**
+     *
+     * @param b
+     * kill execute all the possible kills from a moved piece
+     * with the help of getNeighbors it can approximate
+     * if the piece has moved to an edge place on the board
+     * and check for possible kills accordingly
+     */
+    private void kill(Position b){
+        Position[] neighbors = getNeighbors(b);
+        Pawn killer = (Pawn)getPieceAtPosition(b);
+        boolean owner = killer.getOwner().isPlayerOne();
+        ConcretePiece victim = null;
+        ConcretePiece accomplice = null;
+
+        if(neighbors[0] != null){
+
+            victim = (ConcretePiece)getPieceAtPosition(neighbors[0]);
+
+            if(victim != null && victim.getOwner().isPlayerOne() != owner && !victim.getType().equals(KING_SYMBOL)){
+                if(neighbors[4] == null){
+                    board[neighbors[0].getRow()][neighbors[0].getColum()] = null;
+                    killer.Kill();
+                }
+                else{
+                    accomplice = (ConcretePiece)getPieceAtPosition(neighbors[4]);
+
+                    if(accomplice!= null && accomplice.getOwner().isPlayerOne() == owner && !accomplice.getType().equals(KING_SYMBOL)){
+                        board[neighbors[0].getRow()][neighbors[0].getColum()] = null;
+                        killer.Kill();
+                    }
+                }
+            }
+        }
+        if(neighbors[1] != null){
+
+            victim = (ConcretePiece)getPieceAtPosition(neighbors[1]);
+
+            if(victim != null && victim.getOwner().isPlayerOne() != owner && !victim.getType().equals(KING_SYMBOL)){
+                if(neighbors[5] == null){
+                    board[neighbors[1].getRow()][neighbors[1].getColum()] = null;
+                    killer.Kill();
+                }
+                else{
+                    accomplice = (ConcretePiece)getPieceAtPosition(neighbors[5]);
+
+                    if(accomplice != null && accomplice.getOwner().isPlayerOne() == owner && !accomplice.getType().equals(KING_SYMBOL)){
+                        board[neighbors[1].getRow()][neighbors[1].getColum()] = null;
+                        killer.Kill();
+                    }
+                }
+            }
+        }
+        if(neighbors[2] != null){
+
+            victim = (ConcretePiece)getPieceAtPosition(neighbors[2]);
+
+            if(victim != null && victim.getOwner().isPlayerOne() != owner && !victim.getType().equals(KING_SYMBOL)){
+                if(neighbors[6] == null){
+                    board[neighbors[2].getRow()][neighbors[2].getColum()] = null;
+                    killer.Kill();
+                }
+                else{
+                    accomplice = (ConcretePiece)getPieceAtPosition(neighbors[6]);
+
+                    if(accomplice != null && accomplice.getOwner().isPlayerOne() == owner && !accomplice.getType().equals(KING_SYMBOL)){
+                        board[neighbors[2].getRow()][neighbors[2].getColum()] = null;
+                        killer.Kill();
+                    }
+                }
+            }
+        }
+        if(neighbors[3] != null){
+
+            victim = (ConcretePiece)getPieceAtPosition(neighbors[3]);
+
+            if(victim != null && victim.getOwner().isPlayerOne() != owner && !victim.getType().equals(KING_SYMBOL)){
+                if(neighbors[7] == null){
+                    board[neighbors[3].getRow()][neighbors[3].getColum()] = null;
+                    killer.Kill();
+                }
+                else{
+                    accomplice = (ConcretePiece)getPieceAtPosition(neighbors[7]);
+
+                    if(accomplice!= null && accomplice.getOwner().isPlayerOne() == owner && !accomplice.getType().equals(KING_SYMBOL)){
+                        board[neighbors[3].getRow()][neighbors[3].getColum()] = null;
+                        killer.Kill();
+                    }
+                }
+            }
+        }
+
     }
 
 
